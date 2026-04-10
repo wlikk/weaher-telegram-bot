@@ -1,86 +1,98 @@
 # Moscow Weather Telegram Bot
 
-Telegram bot that returns current weather in Moscow and a clothing recommendation.
+Telegram bot for Moscow weather and clothing recommendation.
+
+This repository now supports two modes:
+
+- Cloudflare Workers (recommended for your hosting case)
+- Python long polling (local or VPS)
 
 ## Features
 
-- `/weather` command for Moscow weather
-- Clothing recommendation based on:
-  - temperature
-  - feels-like temperature
-  - wind speed
-  - precipitation
-- Uses Open-Meteo free API (no API key required)
+- `/weather` for current Moscow weather
+- clothing recommendation by temperature, feels-like, wind, and precipitation
+- free Open-Meteo API (no weather API key)
 
-## Local Run
+## Cloudflare Workers (recommended)
 
-1. Create a bot with BotFather and get token.
-2. Create and activate virtual environment.
-3. Install dependencies.
-4. Set `TELEGRAM_BOT_TOKEN` environment variable.
-5. Run bot.
+### 1) Prerequisites
+
+- Telegram bot token from BotFather
+- Cloudflare account
+- Node.js 18+
+
+### 2) Install and login
+
+```bash
+npm install
+npx wrangler login
+```
+
+### 3) Set secrets in Cloudflare
+
+```bash
+npx wrangler secret put TELEGRAM_BOT_TOKEN
+npx wrangler secret put TELEGRAM_SECRET_TOKEN
+```
+
+`TELEGRAM_SECRET_TOKEN` is any long random string you choose.
+
+### 4) Deploy worker
+
+```bash
+npx wrangler deploy
+```
+
+After deploy, Wrangler prints your worker URL, for example:
+
+`https://moscow-weather-bot.<subdomain>.workers.dev`
+
+### 5) Set Telegram webhook
+
+Replace placeholders and run:
+
+```bash
+curl -X POST "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://moscow-weather-bot.<subdomain>.workers.dev","secret_token":"<TELEGRAM_SECRET_TOKEN>"}'
+```
+
+### 6) Check webhook status
+
+```bash
+curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/getWebhookInfo"
+```
+
+If `last_error_message` is empty and URL is correct, bot is ready.
+
+## Local Worker development
+
+1. Copy `.dev.vars.example` to `.dev.vars`
+2. Put real values for `TELEGRAM_BOT_TOKEN` and `TELEGRAM_SECRET_TOKEN`
+3. Run:
+
+```bash
+npx wrangler dev
+```
+
+## Python mode (fallback)
+
+Python implementation is still available in `bot.py`.
 
 ### Windows PowerShell
 
 ```powershell
-python -m venv .venv
+py -3 -m venv .venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 $env:TELEGRAM_BOT_TOKEN="YOUR_TOKEN"
 python bot.py
 ```
 
-## Free / Low-cost Hosting Options
+## Project files for Workers
 
-### 1) Railway (trial credits)
-
-- Easy deploy from GitHub.
-- Good for quick start.
-- Usually has monthly credits/trial limits.
-
-### 2) Render (free web service may sleep)
-
-- Simple setup.
-- Free services can sleep when inactive.
-- Long-polling bot may have interruptions on free tier.
-
-### 3) Oracle Cloud Free Tier (most stable free option)
-
-- Always Free ARM VM possible.
-- Needs Linux/server basics.
-- Best option if you need 24/7 bot with no sleep.
-
-## Deploy Notes
-
-For process-based hosting, set start command:
-
-```bash
-python bot.py
-```
-
-Required environment variable:
-
-- `TELEGRAM_BOT_TOKEN`
-
-### Render Important Notes
-
-- Use **Background Worker**, not **Web Service** (this bot uses long polling and does not open HTTP port).
-- Pin Python version to `3.12.3` in Render env var `PYTHON_VERSION`.
-- Build command:
-
-```bash
-pip install -r requirements.txt
-```
-
-- Start command:
-
-```bash
-python bot.py
-```
-
-If Render deploy logs show Python `3.14.x`, it can fail with `RuntimeError: There is no current event loop`. In that case, ensure `PYTHON_VERSION=3.12.3` is set and redeploy.
-
-## Recommended Path
-
-If you want *really free and stable* hosting, use Oracle Cloud Free Tier VM.
-If you want easiest setup, start with Railway and monitor usage limits.
+- `src/worker.js` - Telegram webhook handler and weather logic
+- `wrangler.toml` - Cloudflare Worker config
+- `package.json` - Wrangler scripts and dependencies
+- `.dev.vars.example` - local env template
