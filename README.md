@@ -62,6 +62,24 @@ Required environment variable:
 
 - `TELEGRAM_BOT_TOKEN`
 
+### Render Important Notes
+
+- Use **Background Worker**, not **Web Service** (this bot uses long polling and does not open HTTP port).
+- Pin Python version to `3.12.3` in Render env var `PYTHON_VERSION`.
+- Build command:
+
+```bash
+pip install -r requirements.txt
+```
+
+- Start command:
+
+```bash
+python bot.py
+```
+
+If Render deploy logs show Python `3.14.x`, it can fail with `RuntimeError: There is no current event loop`. In that case, ensure `PYTHON_VERSION=3.12.3` is set and redeploy.
+
 ## Recommended Path
 
 If you want *really free and stable* hosting, use Oracle Cloud Free Tier VM.
