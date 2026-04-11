@@ -10,7 +10,11 @@ This repository now supports two modes:
 ## Features
 
 - `/weather` for current Moscow weather
+- `/today` for an hour-by-hour summary of today
+- `/week` for a 7-day forecast
+- Telegram slash command suggestions via `setMyCommands`
 - clothing recommendation by temperature, feels-like, wind, and precipitation
+- admin panel with user count and broadcast mode
 - free Open-Meteo API (no weather API key)
 
 ## Cloudflare Workers (recommended)
@@ -36,6 +40,12 @@ npx wrangler secret put TELEGRAM_SECRET_TOKEN
 ```
 
 `TELEGRAM_SECRET_TOKEN` is any long random string you choose.
+
+Add your Telegram user ID to `ADMIN_TELEGRAM_USER_IDS` in `.dev.vars` for local testing, or use the same variable in Cloudflare secrets if you prefer. Separate multiple admin IDs with commas.
+
+For a Cloudflare deploy, set `ADMIN_TELEGRAM_USER_IDS` in the dashboard or with `wrangler secret put ADMIN_TELEGRAM_USER_IDS`.
+
+The worker uses a Durable Object named `BOT_STATE` for persistent users and admin state, so no extra KV setup is required.
 
 ### 4) Deploy worker
 
@@ -79,6 +89,8 @@ npx wrangler dev
 
 Python implementation is still available in `bot.py`.
 
+It uses a local SQLite file named `bot_data.sqlite3` to store users and admin broadcast state.
+
 ### Windows PowerShell
 
 ```powershell
@@ -87,6 +99,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 $env:TELEGRAM_BOT_TOKEN="YOUR_TOKEN"
+$env:ADMIN_TELEGRAM_USER_IDS="123456789"
 python bot.py
 ```
 

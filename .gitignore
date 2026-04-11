@@ -3,3 +3,4 @@ __pycache__/
 node_modules/
 .dev.vars
 .env
+bot_data.sqlite3
