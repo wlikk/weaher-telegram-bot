@@ -1,4 +1,4 @@
-name = "moscow-weather-bot"
+name = "weaher-telegram-bot"
 main = "src/worker.js"
 compatibility_date = "2026-04-10"
 workers_dev = true
@@ -9,7 +9,7 @@ class_name = "BotStorage"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["BotStorage"]
+new_sqlite_classes = ["BotStorage"]
 
 [observability]
 enabled = true
